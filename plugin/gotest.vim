@@ -1,20 +1,36 @@
-function! GoTest()
-  let line = getline('.')
+function! IsTestFunc(l) 
+  let line = getline(a:l)
   let list = split(line, ' ')
 
-  for l in list
-    let startPoint = stridx(l, 'Test')
-    let endPoint = stridx(l, '(')
-    if startPoint >= 0 && endPoint > 0
-      let testName = l[startPoint:endPoint-1]
-      let result = system("go test -v -run " . testName)
-      echo result
+  if len(list) < 2
+    return ''
+  endif
+
+  if list[0] != 'func'
+    return ''
+  endif
+
+  let startPoint = stridx(list[1], 'Test')
+  let endPoint = stridx(list[1], '(')
+  if startPoint == 0 && endPoint > 0
+    let testName = list[1][startPoint:endPoint-1]
+    return testName
+  endif
+
+  return ''
+endfunction
+
+function! GoTest()
+  let line = line('.')
+
+  for l in range(line)
+    let testName = IsTestFunc(line - l)
+    if testName != ''
+      lcd %:h
+      echo system("go test -v -run " . testName . '$')
       return
     endif
   endfor
-  let result = system("go test -v")
-  echo result
-  return
 endfunction
 
 command! GoTest call GoTest()
