@@ -1,4 +1,4 @@
-function! s:isTestFunc(l) 
+function! s:parseFuncName(l)
   let l:line = getline(a:l)
   let l:list = split(l:line, ' ')
 
@@ -10,27 +10,56 @@ function! s:isTestFunc(l)
     return ''
   endif
 
-  let l:startPoint = stridx(l:list[1], 'Test')
   let l:endPoint = stridx(l:list[1], '(')
-  if l:startPoint == 0 && l:endPoint > 0
-    let l:testName = list[1][l:startPoint:l:endPoint-1]
-    return l:testName
+  if l:endPoint > 0
+    let l:name = list[1][0:l:endPoint-1]
+    return l:name
   endif
 
   return ''
 endfunction
 
-function! GoTest()
-  let l:line = line('.')
+function! s:parseTestFuncName(name) 
+  let l:startPoint = stridx(a:name, 'Test')
+  if l:startPoint == 0
+    return a:name
+  endif
 
-  for l in range(l:line)
-    let l:testName = s:isTestFunc(l:line - l)
-    if l:testName != ''
-      lcd %:h
-      echo system("go test -v -run " . l:testName . '$')
+  return ''
+endfunction
+
+function! s:runTestAll()
+  lcd %:h
+  return system('go test -v')
+endfunction
+
+function! s:runTest(name)
+  lcd %:h
+  return system('go test -v -run ' . a:name . '$')
+endfunction
+
+function! RunGoTest()
+  let l:lines = line('.')
+
+  for idx in range(l:lines)
+    let l:name = s:parseFuncName(l:lines-idx)
+    if l:name != ''
+      if s:parseTestFuncName(l:name) != '' 
+        echo s:runTest(l:name)
+        return
+      else 
+        echo s:runTestAll()
+        return
+      endif
+    else
+    endif
+    if getline(l:lines-idx) == '}'
+      echo s:runTestAll()
       return
     endif
   endfor
+  echo s:runTestAll()
+  return
 endfunction
 
-command! GoTest call GoTest()
+command! GoTest call RunGoTest()
