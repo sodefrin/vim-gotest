@@ -1,13 +1,13 @@
 let s:gotest_buffer = 'TEST_RESULTS'
 
 function! s:runTestAll() abort
-  lcd %:h
-  return system('go test -v')
+  let l:path = fnamemodify(expand('%:p'), ':h')
+  return system('cd ' . l:path . ';' . 'go test -v')
 endfunction
 
 function! s:runTestByName(name) abort
-  lcd %:h
-  return system('go test -v -run ' . a:name . '$')
+  let l:path = fnamemodify(expand('%:p'), ':h')
+  return system('cd ' . l:path . ';' . 'go test -v -run ' . a:name . '$')
 endfunction
 
 function! s:getTestName() abort
@@ -52,7 +52,6 @@ function! gotest#run() abort
     execute 'new' s:gotest_buffer
     set buftype=nofile
   endif
-
 
   %delete _
   call setline(1, split(l:results, '\n'))
