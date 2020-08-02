@@ -1,35 +1,5 @@
 let s:gotest_buffer = 'TEST_RESULTS'
 
-function! s:parseFuncName(l) abort
-  let l:line = getline(a:l)
-  let l:list = split(l:line, ' ')
-
-  if len(l:list) < 2
-    return ''
-  endif
-
-  if l:list[0] != 'func'
-    return ''
-  endif
-
-  let l:endPoint = stridx(l:list[1], '(')
-  if l:endPoint > 0
-    let l:name = list[1][0:l:endPoint-1]
-    return l:name
-  endif
-
-  return ''
-endfunction
-
-function! s:parseTestFuncName(name) abort
-  let l:startPoint = stridx(a:name, 'Test')
-  if l:startPoint == 0
-    return a:name
-  endif
-
-  return ''
-endfunction
-
 function! s:runTestAll() abort
   lcd %:h
   return system('go test -v')
@@ -41,25 +11,23 @@ function! s:runTestByName(name) abort
 endfunction
 
 function! s:getTestName() abort
-  let l:lines = line('.')
+  let l:lineNum = line('.')
 
-  for idx in range(l:lines)
-    let l:name = s:parseFuncName(l:lines-idx)
-    if l:name != ''
-      if s:parseTestFuncName(l:name) != '' 
-        return l:name
-      else 
-        return ''
-      endif
-    else
+  for idx in range(l:lineNum)
+    let l:line = getline(l:lineNum-idx)
+    let l:testName = matchstr(l:line, '^func\s\+\zsTest.*\ze\s*(')
+    if l:testName != ''
+      return l:testName
     endif
-    if getline(l:lines-idx) == '}' && idx > 0
+    if match(line, '^func') == 0
+      return ''
+    endif
+    if idx > 0 && match(line, '^}\s*$') == 0
       return ''
     endif
   endfor
   
   return ''
-
 endfunction
 
 function! s:runTest() abort
