@@ -53,7 +53,7 @@ function! RunGoTest()
       endif
     else
     endif
-    if getline(l:lines-idx) == '}'
+    if getline(l:lines-idx) == '}' && idx > 0
       echo s:runTestAll()
       return
     endif
