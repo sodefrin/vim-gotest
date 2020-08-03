@@ -51,6 +51,10 @@ function! gotest#run() abort
   else
     execute 'new' s:gotest_buffer
     set buftype=nofile
+    nnoremap <silent> <buffer>
+      \ <Plug>(gotest-close)
+      \ :q <CR>
+    nmap <buffer> <CR> <Plug>(gotest-close)
   endif
 
   %delete _
