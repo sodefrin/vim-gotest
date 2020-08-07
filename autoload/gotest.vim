@@ -38,9 +38,7 @@ function! s:runTest() abort
   return s:runTestAll()
 endfunction
 
-function! gotest#run() abort
-  let l:results = s:runTest()
-
+function! s:showResult(results) abort
   if bufexists(s:gotest_buffer)
     let winid = bufwinid(s:gotest_buffer)
     if winid isnot# -1
@@ -54,9 +52,29 @@ function! gotest#run() abort
     nnoremap <silent> <buffer>
       \ <Plug>(gotest-close)
       \ :q <CR>
-    nmap <buffer> <CR> <Plug>(gotest-close)
+    nmap <buffer> q <Plug>(gotest-close)
+    nnoremap <silent> <buffer>
+      \ <Plug>(gotest-run-subtest)
+      \ :<C-u>call  gotest#runSubTest()<CR>
+    nmap <buffer> <CR> <Plug>(gotest-run-subtest)
   endif
 
   %delete _
-  call setline(1, split(l:results, '\n'))
+  call setline(1, split(a:results, '\n'))
+endfunction
+
+function! gotest#runSubTest() abort
+  let l:line = getline('.')
+  let l:testName = matchstr(l:line, '\zsTest\w*\ze\(\s\|$\)')
+  if l:testName != ''
+    let l:results = s:runTestByName(l:testName)
+    call s:showResult(l:results)
+  endif
+endfunction
+
+
+function! gotest#run() abort
+  let l:results = s:runTest()
+
+  call s:showResult(l:results)
 endfunction
