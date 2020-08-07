@@ -65,7 +65,7 @@ endfunction
 
 function! gotest#runSubTest() abort
   let l:line = getline('.')
-  let l:testName = matchstr(l:line, '\zsTest\w*\ze\(\s\|$\)')
+  let l:testName = matchstr(l:line, '\zsTest\(\w\|\/\)*\ze\(\s\|$\)')
   if l:testName != ''
     let l:results = s:runTestByName(l:testName)
     call s:showResult(l:results)
